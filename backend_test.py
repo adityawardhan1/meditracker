@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Pharmaceutical Order Management System
-Tests all backend APIs including authentication, order management, dashboard, search, export, and demo data.
+Comprehensive Backend Testing for Pharmaceutical Order Management System - Department-Based Roles
+Tests all backend APIs with new department-based authentication and role permissions:
+- Admin, Sales Dept, Purchase Dept, Production Dept
+- Department-specific stage update permissions
+- Role-based order creation and export restrictions
 """
 
 import requests
 import json
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import base64
 import pandas as pd
 from io import BytesIO

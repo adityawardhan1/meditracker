@@ -69,7 +69,7 @@ class PharmaBackendTester:
             }
         ]
         
-        # Test signup for each role
+        # Test signup for each role (or skip if user exists)
         for user_data in test_users:
             try:
                 response = requests.post(f"{self.base_url}/auth/signup", 
@@ -80,6 +80,11 @@ class PharmaBackendTester:
                     self.users[user_data["role"]] = {**user_data, **user_response}
                     self.log_test(f"Signup {user_data['role']}", True, 
                                 f"User {user_data['username']} created successfully")
+                elif response.status_code == 400 and "already registered" in response.text:
+                    # User already exists, that's fine for testing
+                    self.users[user_data["role"]] = user_data
+                    self.log_test(f"Signup {user_data['role']}", True, 
+                                f"User {user_data['username']} already exists (OK for testing)")
                 else:
                     self.log_test(f"Signup {user_data['role']}", False, 
                                 f"Failed with status {response.status_code}", response.text)

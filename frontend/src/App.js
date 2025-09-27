@@ -608,7 +608,8 @@ const CreateOrder = () => {
         product: {
           ...formData.product,
           quantity: parseInt(formData.product.quantity)
-        }
+        },
+        deadline: new Date(formData.deadline).toISOString()
       });
       
       // Reset form

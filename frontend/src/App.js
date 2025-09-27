@@ -438,9 +438,17 @@ const Orders = () => {
     return currentIndex < stages.length - 1 ? stages[currentIndex + 1] : null;
   };
 
-  const canUpdateStage = (order) => {
-    if (user.role === 'Admin' || user.role === 'Manager') return true;
-    return user.role === 'Employee' && order.assigned_employees.includes(user.id);
+  const canUpdateStage = (order, targetStage) => {
+    if (user.role === 'Admin') return true;
+    
+    const departmentStages = {
+      'Sales Dept': ['Ready for Delivery', 'Delivered & Payment Received'],
+      'Purchase Dept': ['Raw Material Ordered', 'Raw Material Received'],
+      'Production Dept': ['Batch in Production', 'Packaging']
+    };
+    
+    const allowedStages = departmentStages[user.role] || [];
+    return allowedStages.includes(targetStage);
   };
 
   if (loading) {

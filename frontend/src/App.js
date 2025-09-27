@@ -532,6 +532,7 @@ const Orders = () => {
                       <p><strong>Quantity:</strong> {order.product.quantity} {order.product.unit}</p>
                     </div>
                     <div>
+                      <p><strong>Deadline:</strong> {new Date(order.deadline).toLocaleDateString()}</p>
                       <p><strong>Created:</strong> {new Date(order.created_at).toLocaleDateString()}</p>
                       <p><strong>Updated:</strong> {new Date(order.updated_at).toLocaleDateString()}</p>
                     </div>

@@ -44,10 +44,10 @@ class PharmaBackendTester:
             print(f"   Details: {details}")
     
     def test_authentication_system(self):
-        """Test JWT authentication for all roles"""
-        print("\n=== Testing Authentication System ===")
+        """Test JWT authentication for all department-based roles"""
+        print("\n=== Testing Department-Based Authentication System ===")
         
-        # Test user signup for all roles
+        # Test user signup for all new department roles
         test_users = [
             {
                 "username": "admin_test",
@@ -57,18 +57,25 @@ class PharmaBackendTester:
                 "role": "Admin"
             },
             {
-                "username": "manager_test",
-                "email": "manager@pharmatest.com", 
-                "full_name": "Manager Test User",
-                "password": "manager123!",
-                "role": "Manager"
+                "username": "sales_test",
+                "email": "sales@pharmatest.com", 
+                "full_name": "Sales Department Test",
+                "password": "sales123!",
+                "role": "Sales Dept"
             },
             {
-                "username": "employee_test",
-                "email": "employee@pharmatest.com",
-                "full_name": "Employee Test User", 
-                "password": "employee123!",
-                "role": "Employee"
+                "username": "purchase_test",
+                "email": "purchase@pharmatest.com",
+                "full_name": "Purchase Department Test", 
+                "password": "purchase123!",
+                "role": "Purchase Dept"
+            },
+            {
+                "username": "production_test",
+                "email": "production@pharmatest.com",
+                "full_name": "Production Department Test", 
+                "password": "production123!",
+                "role": "Production Dept"
             }
         ]
         

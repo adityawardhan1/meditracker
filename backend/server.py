@@ -296,13 +296,16 @@ async def update_order_stage(order_id: str, update_data: OrderUpdate, current_us
     )
     
     # Update order
-    update_doc = {
-        "current_stage": update_data.stage,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "$push": {"activities": prepare_for_mongo(activity.dict())}
-    }
-    
-    await db.orders.update_one({"id": order_id}, {"$set": update_doc})
+    await db.orders.update_one(
+        {"id": order_id}, 
+        {
+            "$set": {
+                "current_stage": update_data.stage,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            },
+            "$push": {"activities": prepare_for_mongo(activity.dict())}
+        }
+    )
     
     return {"message": "Stage updated successfully"}
 

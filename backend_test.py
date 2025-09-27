@@ -142,8 +142,8 @@ class PharmaBackendTester:
                             f"Exception occurred: {str(e)}")
     
     def test_order_management(self):
-        """Test order CRUD operations and stage management"""
-        print("\n=== Testing Order Management ===")
+        """Test order CRUD operations with department-based permissions"""
+        print("\n=== Testing Order Management with Department Permissions ===")
         
         if "Admin" not in self.tokens:
             self.log_test("Order Management", False, "No Admin token available")
@@ -151,7 +151,8 @@ class PharmaBackendTester:
         
         admin_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Admin']}"}
         
-        # Test order creation
+        # Test order creation with mandatory deadlines
+        deadline = (datetime.now(timezone.utc) + timedelta(days=14)).isoformat()
         test_orders = [
             {
                 "customer": {
@@ -169,7 +170,8 @@ class PharmaBackendTester:
                     "batch_size": "1500 units"
                 },
                 "priority": "High",
-                "assigned_employees": []
+                "deadline": deadline,
+                "assigned_departments": ["Sales Dept", "Purchase Dept", "Production Dept"]
             },
             {
                 "customer": {
@@ -187,7 +189,8 @@ class PharmaBackendTester:
                     "batch_size": "800 units"
                 },
                 "priority": "Medium",
-                "assigned_employees": []
+                "deadline": deadline,
+                "assigned_departments": ["Sales Dept", "Purchase Dept", "Production Dept"]
             }
         ]
         

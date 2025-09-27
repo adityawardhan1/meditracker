@@ -86,7 +86,7 @@ const Login = () => {
     password: '',
     email: '',
     full_name: '',
-    role: 'Employee'
+    role: 'Sales Dept'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

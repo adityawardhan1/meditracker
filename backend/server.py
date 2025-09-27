@@ -520,7 +520,7 @@ async def clear_sample_data(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     # Delete sample users (except current user)
-    await db.users.delete_many({"username": {"$in": ["manager1", "employee1", "employee2"]}})
+    await db.users.delete_many({"username": {"$in": ["sales_head", "purchase_head", "production_head", "sales_exec"]}})
     
     # Delete all orders (in a real app, you might want to be more selective)
     await db.orders.delete_many({})

@@ -630,10 +630,10 @@ const CreateOrder = () => {
     }
   };
 
-  if (user.role === 'Employee') {
+  if (user.role !== 'Admin' && user.role !== 'Sales Dept') {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600">You don't have permission to create orders.</p>
+        <p className="text-gray-600">Only Admin and Sales Department can create orders.</p>
       </div>
     );
   }

@@ -410,8 +410,8 @@ async def get_users(current_user: User = Depends(get_current_user)):
 # Export Routes
 @api_router.get("/export/orders")
 async def export_orders(current_user: User = Depends(get_current_user)):
-    if current_user.role not in ["Admin", "Manager"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    if current_user.role not in ["Admin", "Sales Dept"]:
+        raise HTTPException(status_code=403, detail="Admin or Sales Dept access required")
     
     orders = await db.orders.find().to_list(1000)
     
@@ -425,6 +425,8 @@ async def export_orders(current_user: User = Depends(get_current_user)):
             "Quantity": order["product"]["quantity"],
             "Current Stage": order["current_stage"],
             "Priority": order["priority"],
+            "Deadline": order.get("deadline", ""),
+            "Departments": ", ".join(order.get("assigned_departments", [])),
             "Created At": order["created_at"],
             "Updated At": order["updated_at"]
         })

@@ -793,7 +793,7 @@ const CreateOrder = () => {
           {/* Order Settings */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4">Order Settings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                 <select
@@ -807,20 +807,42 @@ const CreateOrder = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Assign Employees</label>
-                <select
-                  multiple
-                  value={formData.assigned_employees}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    assigned_employees: Array.from(e.target.selectedOptions, option => option.value)
-                  })}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Deadline *</label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={formData.deadline}
+                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {users.map(user => (
-                    <option key={user.id} value={user.id}>{user.full_name}</option>
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Involved Departments</label>
+                <div className="space-y-2">
+                  {['Sales Dept', 'Purchase Dept', 'Production Dept'].map(dept => (
+                    <label key={dept} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.assigned_departments.includes(dept)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({
+                              ...formData,
+                              assigned_departments: [...formData.assigned_departments, dept]
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              assigned_departments: formData.assigned_departments.filter(d => d !== dept)
+                            });
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{dept}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
             </div>
           </div>

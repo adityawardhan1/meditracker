@@ -538,14 +538,17 @@ const Orders = () => {
                   </div>
                 </div>
                 <div className="ml-6">
-                  {canUpdateStage(order) && getNextStage(order.current_stage) && (
-                    <button
-                      onClick={() => updateOrderStage(order.id, getNextStage(order.current_stage))}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Advance to {getNextStage(order.current_stage)}
-                    </button>
-                  )}
+                  {(() => {
+                    const nextStage = getNextStage(order.current_stage);
+                    return nextStage && canUpdateStage(order, nextStage) && (
+                      <button
+                        onClick={() => updateOrderStage(order.id, nextStage)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Advance to {nextStage}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

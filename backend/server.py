@@ -60,7 +60,7 @@ class User(BaseModel):
     username: str
     email: str
     full_name: str
-    role: str  # Admin, Manager, Employee
+    role: str  # Admin, Sales Dept, Purchase Dept, Production Dept
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

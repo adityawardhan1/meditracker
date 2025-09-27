@@ -307,9 +307,18 @@ async def update_order_stage(order_id: str, update_data: OrderUpdate, current_us
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    # Check permissions
-    if current_user.role == "Employee" and current_user.id not in order.get("assigned_employees", []):
-        raise HTTPException(status_code=403, detail="Not assigned to this order")
+    # Check if user can update to this stage
+    if not can_update_stage(current_user.role, order["current_stage"], update_data.stage):
+        department_stages = {
+            "Sales Dept": ["Ready for Delivery", "Delivered & Payment Received"],
+            "Purchase Dept": ["Raw Material Ordered", "Raw Material Received"], 
+            "Production Dept": ["Batch in Production", "Packaging"]
+        }
+        allowed_stages = department_stages.get(current_user.role, [])
+        raise HTTPException(
+            status_code=403, 
+            detail=f"{current_user.role} can only update to stages: {', '.join(allowed_stages)}"
+        )
     
     if update_data.stage not in ORDER_STAGES:
         raise HTTPException(status_code=400, detail="Invalid stage")
@@ -318,10 +327,10 @@ async def update_order_stage(order_id: str, update_data: OrderUpdate, current_us
     activity = OrderActivity(
         user_id=current_user.id,
         user_name=current_user.full_name,
-        action="Stage Updated",
+        action=f"Stage Updated by {current_user.role}",
         stage_from=order["current_stage"],
         stage_to=update_data.stage,
-        comment=update_data.comment
+        comment=update_data.comment or f"Updated by {current_user.role} department"
     )
     
     # Update order

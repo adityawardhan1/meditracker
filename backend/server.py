@@ -450,11 +450,12 @@ async def create_sample_data(current_user: User = Depends(get_current_user)):
     if current_user.role != "Admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    # Create sample users
+    # Create sample users for each department
     sample_users = [
-        {"username": "manager1", "email": "manager@pharma.com", "full_name": "John Manager", "role": "Manager", "password": "manager123"},
-        {"username": "employee1", "email": "employee1@pharma.com", "full_name": "Alice Employee", "role": "Employee", "password": "employee123"},
-        {"username": "employee2", "email": "employee2@pharma.com", "full_name": "Bob Employee", "role": "Employee", "password": "employee123"}
+        {"username": "sales_head", "email": "sales@pharma.com", "full_name": "Sarah Sales", "role": "Sales Dept", "password": "sales123"},
+        {"username": "purchase_head", "email": "purchase@pharma.com", "full_name": "Peter Purchase", "role": "Purchase Dept", "password": "purchase123"},
+        {"username": "production_head", "email": "production@pharma.com", "full_name": "Paul Production", "role": "Production Dept", "password": "production123"},
+        {"username": "sales_exec", "email": "sales2@pharma.com", "full_name": "Sam Sales Executive", "role": "Sales Dept", "password": "sales123"}
     ]
     
     created_user_ids = []

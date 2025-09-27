@@ -256,8 +256,8 @@ async def get_me(current_user: User = Depends(get_current_user)):
 # Order Routes
 @api_router.post("/orders", response_model=Order)
 async def create_order(order_data: OrderCreate, current_user: User = Depends(get_current_user)):
-    if current_user.role not in ["Admin", "Manager"]:
-        raise HTTPException(status_code=403, detail="Not authorized to create orders")
+    if not can_create_order(current_user.role):
+        raise HTTPException(status_code=403, detail="Only Admin and Sales Dept can create orders")
     
     # Generate order number
     order_count = await db.orders.count_documents({}) + 1
@@ -265,14 +265,20 @@ async def create_order(order_data: OrderCreate, current_user: User = Depends(get
     
     order_dict = order_data.dict()
     order_dict["order_number"] = order_number
+    
+    # Auto-assign all departments except Admin
+    if not order_dict.get("assigned_departments"):
+        order_dict["assigned_departments"] = ["Sales Dept", "Purchase Dept", "Production Dept"]
+    
     order = Order(**order_dict)
     
     # Add creation activity
     activity = OrderActivity(
         user_id=current_user.id,
         user_name=current_user.full_name,
-        action="Order Created",
-        stage_to="Order Received"
+        action=f"Order Created by {current_user.role}",
+        stage_to="Order Received",
+        comment=f"Deadline set: {order_data.deadline.strftime('%Y-%m-%d %H:%M')}"
     )
     order.activities.append(activity)
     

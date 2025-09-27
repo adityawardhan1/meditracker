@@ -12,9 +12,10 @@ import uuid
 from datetime import datetime, timezone
 import jwt
 from passlib.context import CryptContext
-import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+# Email functionality can be added later
+# import smtplib
+# from email.mime.text import MimeText  
+# from email.mime.multipart import MimeMultipart
 import pandas as pd
 from io import BytesIO
 import base64

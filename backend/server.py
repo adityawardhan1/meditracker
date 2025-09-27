@@ -137,16 +137,10 @@ class Comment(BaseModel):
 
 # Helper Functions
 def verify_password(plain_password, hashed_password):
-    # Truncate password to 72 bytes for bcrypt compatibility
-    if len(plain_password.encode('utf-8')) > 72:
-        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.verify(plain_password, hashed_password)
+    return hashlib.sha256((plain_password + SECRET_KEY).encode()).hexdigest() == hashed_password
 
 def get_password_hash(password):
-    # Truncate password to 72 bytes for bcrypt compatibility
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(password)
+    return hashlib.sha256((password + SECRET_KEY).encode()).hexdigest()
 
 def create_access_token(data: dict):
     to_encode = data.copy()

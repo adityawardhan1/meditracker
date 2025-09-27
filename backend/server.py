@@ -494,7 +494,9 @@ async def create_sample_data(current_user: User = Depends(get_current_user)):
     for i, order_data in enumerate(sample_orders):
         order_count = await db.orders.count_documents({}) + 1
         order_data["order_number"] = f"PH{order_count:05d}"
-        order_data["assigned_employees"] = created_user_ids[:2] if created_user_ids else []
+        order_data["assigned_departments"] = ["Sales Dept", "Purchase Dept", "Production Dept"]
+        # Add deadline (7 days from now for demo)
+        order_data["deadline"] = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
         
         order = Order(**order_data)
         

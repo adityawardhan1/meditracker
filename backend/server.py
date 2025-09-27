@@ -36,7 +36,7 @@ api_router = APIRouter(prefix="/api")
 
 # Security
 security = HTTPBearer()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import hashlib
 SECRET_KEY = "pharma_secret_key_2024"  # In production, use environment variable
 ALGORITHM = "HS256"
 

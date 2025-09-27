@@ -995,7 +995,7 @@ const Layout = ({ children }) => {
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: '📊' },
     { id: 'orders', name: 'Orders', icon: '📋' },
-    ...(user.role !== 'Employee' ? [{ id: 'create-order', name: 'Create Order', icon: '➕' }] : []),
+    ...(user.role === 'Admin' || user.role === 'Sales Dept' ? [{ id: 'create-order', name: 'Create Order', icon: '➕' }] : []),
     ...(user.role === 'Admin' ? [{ id: 'settings', name: 'Settings', icon: '⚙️' }] : []),
   ];
 

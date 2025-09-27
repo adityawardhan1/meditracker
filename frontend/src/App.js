@@ -578,7 +578,8 @@ const CreateOrder = () => {
       batch_size: ''
     },
     priority: 'Medium',
-    assigned_employees: []
+    deadline: '',
+    assigned_departments: ['Sales Dept', 'Purchase Dept', 'Production Dept']
   });
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);

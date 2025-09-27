@@ -142,6 +142,29 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return hashlib.sha256((password + SECRET_KEY).encode()).hexdigest()
 
+def can_update_stage(user_role: str, current_stage: str, new_stage: str) -> bool:
+    """Check if user role can update from current_stage to new_stage"""
+    if user_role == "Admin":
+        return True
+    
+    # Sales Dept permissions
+    if user_role == "Sales Dept":
+        return new_stage in ["Ready for Delivery", "Delivered & Payment Received"]
+    
+    # Purchase Dept permissions  
+    elif user_role == "Purchase Dept":
+        return new_stage in ["Raw Material Ordered", "Raw Material Received"]
+    
+    # Production Dept permissions
+    elif user_role == "Production Dept":
+        return new_stage in ["Batch in Production", "Packaging"]
+    
+    return False
+
+def can_create_order(user_role: str) -> bool:
+    """Check if user role can create orders"""
+    return user_role in ["Admin", "Sales Dept"]
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

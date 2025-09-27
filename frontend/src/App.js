@@ -617,7 +617,8 @@ const CreateOrder = () => {
         customer: { name: '', email: '', phone: '', address: '', company: '' },
         product: { name: '', description: '', quantity: '', unit: 'tablets', batch_size: '' },
         priority: 'Medium',
-        assigned_employees: []
+        deadline: '',
+        assigned_departments: ['Sales Dept', 'Purchase Dept', 'Production Dept']
       });
       
       alert('Order created successfully!');

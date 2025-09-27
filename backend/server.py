@@ -52,7 +52,7 @@ ORDER_STAGES = [
 ]
 
 # User Roles
-USER_ROLES = ["Admin", "Manager", "Employee"]
+USER_ROLES = ["Admin", "Sales Dept", "Purchase Dept", "Production Dept"]
 
 # Pydantic Models
 class User(BaseModel):

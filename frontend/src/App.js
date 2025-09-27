@@ -168,8 +168,9 @@ const Login = () => {
                   onChange={(e) => setFormData({...formData, role: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="Employee">Employee</option>
-                  <option value="Manager">Manager</option>
+                  <option value="Sales Dept">Sales Department</option>
+                  <option value="Purchase Dept">Purchase Department</option>
+                  <option value="Production Dept">Production Department</option>
                   <option value="Admin">Admin</option>
                 </select>
               </div>

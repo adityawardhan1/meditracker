@@ -121,8 +121,8 @@ class Order(BaseModel):
 class OrderCreate(BaseModel):
     customer: Customer
     product: Product
-    assigned_employees: List[str] = []
-    deadline: Optional[datetime] = None
+    assigned_departments: List[str] = []  # Which departments are involved
+    deadline: datetime  # Sales must set deadline
     priority: str = "Medium"
 
 class OrderUpdate(BaseModel):

@@ -69,7 +69,7 @@ class UserCreate(BaseModel):
     email: str
     full_name: str
     password: str
-    role: str
+    role: str  # Admin, Sales Dept, Purchase Dept, Production Dept
 
 class UserLogin(BaseModel):
     username: str

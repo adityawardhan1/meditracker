@@ -564,8 +564,8 @@ class PharmaBackendTester:
         self.test_dashboard_stats()
         self.test_search_and_filters()
         self.test_export_functionality()
+        self.test_activity_tracking()  # Test before demo data cleanup
         self.test_demo_data_management()
-        self.test_activity_tracking()
         
         end_time = time.time()
         

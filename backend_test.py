@@ -267,47 +267,286 @@ class PharmaBackendTester:
                 self.log_test(f"Update Stage {order_key}", False, 
                             f"Exception occurred: {str(e)}")
     
-    def test_role_based_access(self):
-        """Test role-based access control"""
-        print("\n=== Testing Role-Based Access Control ===")
+    def test_department_order_creation_permissions(self):
+        """Test department-based order creation permissions"""
+        print("\n=== Testing Department Order Creation Permissions ===")
         
-        if "Employee" not in self.tokens:
-            self.log_test("Role Access Control", False, "No Employee token available")
+        deadline = (datetime.now(timezone.utc) + timedelta(days=10)).isoformat()
+        test_order = {
+            "customer": {
+                "name": "Test Customer Corp",
+                "email": "test@testcorp.com",
+                "phone": "+1-555-0000",
+                "address": "Test Address",
+                "company": "Test Corp"
+            },
+            "product": {
+                "name": "Test Product",
+                "description": "Test Description",
+                "quantity": 100,
+                "unit": "tablets",
+                "batch_size": "10 units"
+            },
+            "priority": "Low",
+            "deadline": deadline
+        }
+        
+        # Test Sales Dept can create orders
+        if "Sales Dept" in self.tokens:
+            sales_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Sales Dept']}"}
+            try:
+                response = requests.post(f"{self.base_url}/orders", 
+                                       json=test_order, headers=sales_headers)
+                
+                if response.status_code == 200:
+                    order_response = response.json()
+                    self.orders["sales_created"] = order_response
+                    self.log_test("Sales Dept Order Creation", True, 
+                                f"Sales Dept successfully created order {order_response.get('order_number')}")
+                else:
+                    self.log_test("Sales Dept Order Creation", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Sales Dept Order Creation", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Purchase Dept cannot create orders
+        if "Purchase Dept" in self.tokens:
+            purchase_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Purchase Dept']}"}
+            try:
+                response = requests.post(f"{self.base_url}/orders", 
+                                       json=test_order, headers=purchase_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Purchase Dept Order Creation Restriction", True, 
+                                "Purchase Dept correctly denied order creation")
+                else:
+                    self.log_test("Purchase Dept Order Creation Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Purchase Dept Order Creation Restriction", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Production Dept cannot create orders
+        if "Production Dept" in self.tokens:
+            production_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Production Dept']}"}
+            try:
+                response = requests.post(f"{self.base_url}/orders", 
+                                       json=test_order, headers=production_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Production Dept Order Creation Restriction", True, 
+                                "Production Dept correctly denied order creation")
+                else:
+                    self.log_test("Production Dept Order Creation Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Production Dept Order Creation Restriction", False, 
+                            f"Exception occurred: {str(e)}")
+    
+    def test_department_stage_permissions(self):
+        """Test department-specific stage update permissions"""
+        print("\n=== Testing Department Stage Update Permissions ===")
+        
+        if not self.orders:
+            self.log_test("Stage Permissions", False, "No orders available for testing")
             return
         
-        employee_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Employee']}"}
+        # Get a test order
+        test_order = None
+        for order in self.orders.values():
+            if order.get("id"):
+                test_order = order
+                break
         
-        # Test employee trying to create order (should fail)
-        try:
-            order_data = {
-                "customer": {
-                    "name": "Test Customer",
-                    "email": "test@test.com",
-                    "phone": "+1-555-0000",
-                    "address": "Test Address",
-                    "company": "Test Company"
-                },
-                "product": {
-                    "name": "Test Product",
-                    "description": "Test Description",
-                    "quantity": 100,
-                    "unit": "tablets",
-                    "batch_size": "10 units"
-                },
-                "priority": "Low"
-            }
-            response = requests.post(f"{self.base_url}/orders", 
-                                   json=order_data, headers=employee_headers)
+        if not test_order:
+            self.log_test("Stage Permissions", False, "No valid order found for testing")
+            return
+        
+        order_id = test_order["id"]
+        
+        # Test Purchase Dept permissions
+        if "Purchase Dept" in self.tokens:
+            purchase_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Purchase Dept']}"}
             
-            if response.status_code == 403:
-                self.log_test("Employee Order Creation Restriction", True, 
-                            "Employee correctly denied order creation")
-            else:
-                self.log_test("Employee Order Creation Restriction", False, 
-                            f"Expected 403, got {response.status_code}", response.text)
-        except Exception as e:
-            self.log_test("Employee Order Creation Restriction", False, 
-                        f"Exception occurred: {str(e)}")
+            # Purchase Dept should be able to update to "Raw Material Ordered"
+            try:
+                stage_update = {
+                    "stage": "Raw Material Ordered",
+                    "comment": "Raw materials ordered by Purchase Department"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=purchase_headers)
+                
+                if response.status_code == 200:
+                    self.log_test("Purchase Dept - Raw Material Ordered", True, 
+                                "Purchase Dept successfully updated to Raw Material Ordered")
+                else:
+                    self.log_test("Purchase Dept - Raw Material Ordered", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Purchase Dept - Raw Material Ordered", False, 
+                            f"Exception occurred: {str(e)}")
+            
+            # Purchase Dept should be able to update to "Raw Material Received"
+            try:
+                stage_update = {
+                    "stage": "Raw Material Received",
+                    "comment": "Raw materials received by Purchase Department"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=purchase_headers)
+                
+                if response.status_code == 200:
+                    self.log_test("Purchase Dept - Raw Material Received", True, 
+                                "Purchase Dept successfully updated to Raw Material Received")
+                else:
+                    self.log_test("Purchase Dept - Raw Material Received", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Purchase Dept - Raw Material Received", False, 
+                            f"Exception occurred: {str(e)}")
+            
+            # Purchase Dept should NOT be able to update to "Packaging" (Production stage)
+            try:
+                stage_update = {
+                    "stage": "Packaging",
+                    "comment": "Attempting unauthorized stage update"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=purchase_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Purchase Dept - Packaging Restriction", True, 
+                                "Purchase Dept correctly denied Packaging stage update")
+                else:
+                    self.log_test("Purchase Dept - Packaging Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Purchase Dept - Packaging Restriction", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Production Dept permissions
+        if "Production Dept" in self.tokens:
+            production_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Production Dept']}"}
+            
+            # Production Dept should be able to update to "Batch in Production"
+            try:
+                stage_update = {
+                    "stage": "Batch in Production",
+                    "comment": "Batch started by Production Department"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=production_headers)
+                
+                if response.status_code == 200:
+                    self.log_test("Production Dept - Batch in Production", True, 
+                                "Production Dept successfully updated to Batch in Production")
+                else:
+                    self.log_test("Production Dept - Batch in Production", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Production Dept - Batch in Production", False, 
+                            f"Exception occurred: {str(e)}")
+            
+            # Production Dept should be able to update to "Packaging"
+            try:
+                stage_update = {
+                    "stage": "Packaging",
+                    "comment": "Packaging completed by Production Department"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=production_headers)
+                
+                if response.status_code == 200:
+                    self.log_test("Production Dept - Packaging", True, 
+                                "Production Dept successfully updated to Packaging")
+                else:
+                    self.log_test("Production Dept - Packaging", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Production Dept - Packaging", False, 
+                            f"Exception occurred: {str(e)}")
+            
+            # Production Dept should NOT be able to update to "Ready for Delivery" (Sales stage)
+            try:
+                stage_update = {
+                    "stage": "Ready for Delivery",
+                    "comment": "Attempting unauthorized stage update"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=production_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Production Dept - Ready for Delivery Restriction", True, 
+                                "Production Dept correctly denied Ready for Delivery stage update")
+                else:
+                    self.log_test("Production Dept - Ready for Delivery Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Production Dept - Ready for Delivery Restriction", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Sales Dept permissions
+        if "Sales Dept" in self.tokens:
+            sales_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Sales Dept']}"}
+            
+            # Sales Dept should be able to update to "Ready for Delivery"
+            try:
+                stage_update = {
+                    "stage": "Ready for Delivery",
+                    "comment": "Order ready for delivery by Sales Department"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=sales_headers)
+                
+                if response.status_code == 200:
+                    self.log_test("Sales Dept - Ready for Delivery", True, 
+                                "Sales Dept successfully updated to Ready for Delivery")
+                else:
+                    self.log_test("Sales Dept - Ready for Delivery", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Sales Dept - Ready for Delivery", False, 
+                            f"Exception occurred: {str(e)}")
+            
+            # Sales Dept should be able to update to "Delivered & Payment Received"
+            try:
+                stage_update = {
+                    "stage": "Delivered & Payment Received",
+                    "comment": "Order delivered and payment received by Sales Department"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=sales_headers)
+                
+                if response.status_code == 200:
+                    self.log_test("Sales Dept - Delivered & Payment Received", True, 
+                                "Sales Dept successfully updated to Delivered & Payment Received")
+                else:
+                    self.log_test("Sales Dept - Delivered & Payment Received", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Sales Dept - Delivered & Payment Received", False, 
+                            f"Exception occurred: {str(e)}")
+            
+            # Sales Dept should NOT be able to update to "Raw Material Ordered" (Purchase stage)
+            try:
+                stage_update = {
+                    "stage": "Raw Material Ordered",
+                    "comment": "Attempting unauthorized stage update"
+                }
+                response = requests.put(f"{self.base_url}/orders/{order_id}/stage", 
+                                      json=stage_update, headers=sales_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Sales Dept - Raw Material Ordered Restriction", True, 
+                                "Sales Dept correctly denied Raw Material Ordered stage update")
+                else:
+                    self.log_test("Sales Dept - Raw Material Ordered Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Sales Dept - Raw Material Ordered Restriction", False, 
+                            f"Exception occurred: {str(e)}")
     
     def test_dashboard_stats(self):
         """Test dashboard statistics API"""

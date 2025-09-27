@@ -110,8 +110,8 @@ class Order(BaseModel):
     customer: Customer
     product: Product
     current_stage: str = "Order Received"
-    assigned_employees: List[str] = []
-    deadline: Optional[datetime] = None
+    assigned_departments: List[str] = []  # Which departments are involved
+    deadline: datetime  # Required deadline set by Sales
     priority: str = "Medium"  # High, Medium, Low
     activities: List[OrderActivity] = []
     internal_comments: List[Dict[str, Any]] = []

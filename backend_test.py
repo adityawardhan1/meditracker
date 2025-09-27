@@ -655,44 +655,94 @@ class PharmaBackendTester:
             self.log_test("Filter by Priority", False, 
                         f"Exception occurred: {str(e)}")
     
-    def test_export_functionality(self):
-        """Test Excel export functionality"""
-        print("\n=== Testing Export Functionality ===")
+    def test_export_permissions(self):
+        """Test export functionality with department permissions"""
+        print("\n=== Testing Export Permissions ===")
         
-        if "Admin" not in self.tokens:
-            self.log_test("Export Functionality", False, "No Admin token available")
-            return
-        
-        admin_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Admin']}"}
-        
-        try:
-            response = requests.get(f"{self.base_url}/export/orders", headers=admin_headers)
-            
-            if response.status_code == 200:
-                export_data = response.json()
+        # Test Admin can export
+        if "Admin" in self.tokens:
+            admin_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Admin']}"}
+            try:
+                response = requests.get(f"{self.base_url}/export/orders", headers=admin_headers)
                 
-                if "filename" in export_data and "data" in export_data:
-                    # Verify base64 data can be decoded
-                    try:
-                        decoded_data = base64.b64decode(export_data["data"])
-                        # Try to read as Excel file
-                        excel_buffer = BytesIO(decoded_data)
-                        df = pd.read_excel(excel_buffer)
-                        
-                        self.log_test("Export Functionality", True, 
-                                    f"Excel export successful: {export_data['filename']}, {len(df)} rows")
-                    except Exception as decode_error:
-                        self.log_test("Export Functionality", False, 
-                                    f"Failed to decode/read Excel data: {str(decode_error)}")
+                if response.status_code == 200:
+                    export_data = response.json()
+                    
+                    if "filename" in export_data and "data" in export_data:
+                        # Verify base64 data can be decoded
+                        try:
+                            decoded_data = base64.b64decode(export_data["data"])
+                            # Try to read as Excel file
+                            excel_buffer = BytesIO(decoded_data)
+                            df = pd.read_excel(excel_buffer)
+                            
+                            self.log_test("Admin Export Permission", True, 
+                                        f"Admin export successful: {export_data['filename']}, {len(df)} rows")
+                        except Exception as decode_error:
+                            self.log_test("Admin Export Permission", False, 
+                                        f"Failed to decode/read Excel data: {str(decode_error)}")
+                    else:
+                        self.log_test("Admin Export Permission", False, 
+                                    "Missing filename or data in response", export_data)
                 else:
-                    self.log_test("Export Functionality", False, 
-                                "Missing filename or data in response", export_data)
-            else:
-                self.log_test("Export Functionality", False, 
-                            f"Failed with status {response.status_code}", response.text)
-        except Exception as e:
-            self.log_test("Export Functionality", False, 
-                        f"Exception occurred: {str(e)}")
+                    self.log_test("Admin Export Permission", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Admin Export Permission", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Sales Dept can export
+        if "Sales Dept" in self.tokens:
+            sales_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Sales Dept']}"}
+            try:
+                response = requests.get(f"{self.base_url}/export/orders", headers=sales_headers)
+                
+                if response.status_code == 200:
+                    export_data = response.json()
+                    if "filename" in export_data and "data" in export_data:
+                        self.log_test("Sales Dept Export Permission", True, 
+                                    f"Sales Dept export successful: {export_data['filename']}")
+                    else:
+                        self.log_test("Sales Dept Export Permission", False, 
+                                    "Missing filename or data in response")
+                else:
+                    self.log_test("Sales Dept Export Permission", False, 
+                                f"Failed with status {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Sales Dept Export Permission", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Purchase Dept cannot export
+        if "Purchase Dept" in self.tokens:
+            purchase_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Purchase Dept']}"}
+            try:
+                response = requests.get(f"{self.base_url}/export/orders", headers=purchase_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Purchase Dept Export Restriction", True, 
+                                "Purchase Dept correctly denied export access")
+                else:
+                    self.log_test("Purchase Dept Export Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Purchase Dept Export Restriction", False, 
+                            f"Exception occurred: {str(e)}")
+        
+        # Test Production Dept cannot export
+        if "Production Dept" in self.tokens:
+            production_headers = {**self.headers, "Authorization": f"Bearer {self.tokens['Production Dept']}"}
+            try:
+                response = requests.get(f"{self.base_url}/export/orders", headers=production_headers)
+                
+                if response.status_code == 403:
+                    self.log_test("Production Dept Export Restriction", True, 
+                                "Production Dept correctly denied export access")
+                else:
+                    self.log_test("Production Dept Export Restriction", False, 
+                                f"Expected 403, got {response.status_code}", response.text)
+            except Exception as e:
+                self.log_test("Production Dept Export Restriction", False, 
+                            f"Exception occurred: {str(e)}")
     
     def test_demo_data_management(self):
         """Test demo data creation and cleanup"""

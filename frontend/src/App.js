@@ -592,7 +592,7 @@ const CreateOrder = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(`${API}/users`);
-      setUsers(response.data.filter(u => u.role === 'Employee'));
+      setUsers(response.data.filter(u => u.role !== 'Admin'));
     } catch (error) {
       console.error('Error fetching users:', error);
     }

@@ -400,8 +400,8 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
 # User Management Routes
 @api_router.get("/users", response_model=List[User])
 async def get_users(current_user: User = Depends(get_current_user)):
-    if current_user.role not in ["Admin", "Manager"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     
     users = await db.users.find({}, {"hashed_password": 0}).to_list(1000)
     parsed_users = [parse_from_mongo(user) for user in users]
